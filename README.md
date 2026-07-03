@@ -1,5 +1,8 @@
 # Mini Agent
+## Environment
 
+- Python: 3.10
+- OS: Windows 11
 ## Project Goal
 
 为什么要做这个项目？
@@ -32,7 +35,7 @@
 
 ✅ Step 1 Project Bootstrap
 
-⬜ Step 2 LLM
+✅ Step 2 LLM Client
 
 ⬜ Step 3 Tool
 
