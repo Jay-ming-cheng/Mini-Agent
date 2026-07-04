@@ -1,10 +1,13 @@
 from config import Config
-
-def main():
-    print("API Key:", Config.OPENAI_API_KEY)
-    print("Base URL:", Config.OPENAI_BASE_URL)
-    print("Model:", Config.MODEL_NAME)
+from llm.client import LLMClient
 
 
-if __name__ == "__main__":
-    main()
+llm = LLMClient()
+
+response = llm.chat("请用一句话介绍你自己.")
+
+print(response)
+
+
+# if __name__ == "__main__":
+#     main()
