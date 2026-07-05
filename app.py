@@ -1,17 +1,13 @@
-from config import Config
 from llm.client import LLMClient
-from tools.calculator import calculate
-
+from agent.agent import Agent
 
 llm = LLMClient()
+agent = Agent(llm)
 
-# response = llm.chat("我的名字叫JAY")
-#
-# print(response)
-#
-# print(llm.chat("我叫什么？"))
-print(calculate("2 + 3 * 4"))
+while True:
+    message = input("You: ")
 
+    if message.lower() == "exit":
+        break
 
-# if __name__ == "__main__":
-#     main()
+    print("Agent:", agent.chat(message))

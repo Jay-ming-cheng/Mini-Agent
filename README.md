@@ -58,7 +58,7 @@ Push
 - ✅ Step 2：Configuration & LLM Client
 - ✅ Step 3：Conversation Memory
 - ✅ Step 4：Tool
-- ⬜ Step 5：Agent
+- ✅  Step 5：Agent
 - ⬜ Step 6：Planning
 - ⬜ Step 7：Reflection
 - ⬜ Step 8：Memory
@@ -107,9 +107,7 @@ print(llm.chat("我叫 Jay"))
 print(llm.chat("我叫什么？"))
 ```
 模型能够根据历史对话回答问题。
-# Current Progress
-
-### Tool
+### Step 4：Tool
 
 已完成：
 
@@ -119,7 +117,14 @@ print(llm.chat("我叫什么？"))
 - ✅ Tool 独立测试
 - ✅ Tool 异常处理
 ---
+### Step 5: Agent
 
+已完成：
+
+- ✅ 新增 Agent 类
+- ✅ Agent 成为系统统一入口
+- ✅ Agent 与 LLMClient 解耦
+- ✅ app.py 通过 Agent 与模型交互
 ## 📚 Documents
 
 每一步都会记录完整的设计思路。
