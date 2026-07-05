@@ -56,8 +56,8 @@ Push
 
 - ✅ Step 1：Project Bootstrap
 - ✅ Step 2：Configuration & LLM Client
-- ⬜ Step 3：Conversation Memory
-- ⬜ Step 4：Tool
+- ✅ Step 3：Conversation Memory
+- ✅ Step 4：Tool
 - ⬜ Step 5：Agent
 - ⬜ Step 6：Planning
 - ⬜ Step 7：Reflection
@@ -107,7 +107,17 @@ print(llm.chat("我叫 Jay"))
 print(llm.chat("我叫什么？"))
 ```
 模型能够根据历史对话回答问题。
+# Current Progress
 
+### Tool
+
+已完成：
+
+- ✅ 第一个 Tool（Calculator）
+- ✅ Tool 与 LLM 解耦
+- ✅ Tool 与 Agent 解耦
+- ✅ Tool 独立测试
+- ✅ Tool 异常处理
 ---
 
 ## 📚 Documents
