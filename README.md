@@ -89,17 +89,24 @@ Push
 - ✅ 统一 `chat()` 接口
 - ✅ 配置与业务解耦
 
+### Step 3：Conversation Memory
+
+已完成：
+
+- ✅ 保存用户消息
+- ✅ 保存模型回复
+- ✅ 自动维护聊天上下文
+- ✅ 支持连续多轮对话
+
 现在已经可以：
 
 ```python
-from llm.client import LLMClient
-
 llm = LLMClient()
 
-response = llm.chat("你好")
-
-print(response)
+print(llm.chat("我叫 Jay"))
+print(llm.chat("我叫什么？"))
 ```
+模型能够根据历史对话回答问题。
 
 ---
 

@@ -27,6 +27,8 @@ class LLMClient:
         self.client = OpenAI(api_key=Config.OPENAI_API_KEY,base_url=Config.OPENAI_BASE_URL)
         # 保存当前使用的模型名称
         self.model = Config.MODEL_NAME
+        # 保存当前会话的聊天记录
+        self.messages = []
 
 
 
@@ -40,12 +42,23 @@ class LLMClient:
         Returns:
             大模型回复的文本内容。
         """
-        messages = [
+        self.messages.append(
             {
                 "role":"user",
                 "content":message
-            }
-        ]
 
-        response = self.client.chat.completions.create(model=self.model,messages=messages)
-        return response.choices[0].message.content
+            }
+        )
+
+
+
+        response = self.client.chat.completions.create(model=self.model,messages=self.messages)
+        assistant_message = response.choices[0].message.content
+        self.messages.append(
+            {
+                "role":"assistant",
+                "content":assistant_message
+            }
+        )
+        return assistant_message
+

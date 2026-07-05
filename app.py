@@ -4,9 +4,11 @@ from llm.client import LLMClient
 
 llm = LLMClient()
 
-response = llm.chat("请用一句话介绍你自己.")
+response = llm.chat("我的名字叫JAY")
 
 print(response)
+
+print(llm.chat("我叫什么？"))
 
 
 # if __name__ == "__main__":
