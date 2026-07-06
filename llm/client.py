@@ -32,7 +32,7 @@ class LLMClient:
 
 
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str,save_history: bool = True) -> str:
         """
         与大模型进行一次对话。
 
@@ -42,7 +42,8 @@ class LLMClient:
         Returns:
             大模型回复的文本内容。
         """
-        self.messages.append(
+        messages = self.messages.copy()
+        messages.append(
             {
                 "role":"user",
                 "content":message
@@ -52,13 +53,15 @@ class LLMClient:
 
 
 
-        response = self.client.chat.completions.create(model=self.model,messages=self.messages)
+        response = self.client.chat.completions.create(model=self.model,messages=messages)
         assistant_message = response.choices[0].message.content
-        self.messages.append(
-            {
-                "role":"assistant",
-                "content":assistant_message
-            }
-        )
+        if save_history:
+            self.messages = messages
+            self.messages.append(
+                {
+                    "role":"assistant",
+                    "content":assistant_message
+                }
+            )
         return assistant_message
 

@@ -282,8 +282,8 @@ Conversation Memory：
 
 维护当前聊天上下文。
 
-Long-term Memory：
-
+Long-term Memory：**
+**
 保存真正长期有价值的信息。
 
 两者属于不同层次的 Memory。

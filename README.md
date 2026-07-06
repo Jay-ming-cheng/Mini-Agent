@@ -58,10 +58,11 @@ Push
 - ✅ Step 2：Configuration & LLM Client
 - ✅ Step 3：Conversation Memory
 - ✅ Step 4：Tool
-- ✅  Step 5：Agent
-- ⬜ Step 6：Planning
-- ⬜ Step 7：Reflection
-- ⬜ Step 8：Memory
+- ✅ Step 5：Agent
+- ✅ Step 6：Tool Workflow
+- ⬜ Step 7：Planning
+- ⬜ Step 8：Reflection
+- ⬜ Step 9：Memory
 
 ---
 
@@ -125,6 +126,18 @@ print(llm.chat("我叫什么？"))
 - ✅ Agent 成为系统统一入口
 - ✅ Agent 与 LLMClient 解耦
 - ✅ app.py 通过 Agent 与模型交互
+- 
+### step 6: Tool Workflow
+
+已完成：
+
+- ✅ Agent 判断是否需要调用 Tool
+- ✅ LLM 输出 Tool Decision（JSON）
+- ✅ Agent 解析 Tool Decision
+- ✅ Agent 调用 Tool
+- ✅ Tool 返回执行结果
+- ✅ LLM 基于 Tool Result 生成最终回复
+- ✅ 内部 Prompt 不污染聊天历史
 ## 📚 Documents
 
 每一步都会记录完整的设计思路。
