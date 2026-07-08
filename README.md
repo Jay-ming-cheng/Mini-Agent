@@ -60,7 +60,7 @@ Push
 - ✅ Step 4：Tool
 - ✅ Step 5：Agent
 - ✅ Step 6：Tool Workflow
-- ⬜ Step 7：Planning
+- ✅ Step 7：Planning
 - ⬜ Step 8：Reflection
 - ⬜ Step 9：Memory
 
@@ -139,6 +139,17 @@ print(llm.chat("我叫什么？"))
 - ✅ LLM 基于 Tool Result 生成最终回复
 - ✅ 内部 Prompt 不污染聊天历史
 ## 📚 Documents
+
+### step 7: Planning
+
+已完成：
+
+- ✅ 新增 Planner（_plan）
+- ✅ LLM 生成执行计划（Plan）
+- ✅ Plan 使用 JSON 数组表示
+- ✅ Agent 根据 Plan 执行 Tool
+- ✅ Tool Decision 升级为 Planning
+- ✅ Planning Prompt 不保存聊天历史
 
 每一步都会记录完整的设计思路。
 

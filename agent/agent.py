@@ -1,5 +1,3 @@
-from json import tool
-from unittest import result
 
 from llm.client import LLMClient
 from tools.calculator import Calculator
@@ -32,44 +30,62 @@ class Agent:
             "calculator": Calculator()
         }
 
-    def _decide_tool(self,message: str):
+
+
+    def _plan(self,message: str) -> list[dict]:
         """
-        让 LLM 判断是否需要调用 Tool。
+        根据用户输入生成执行计划。
+
+        Args:
+            message: 用户输入。
+
+        Returns:
+            Plan（步骤列表）。
         """
         prompt = f"""
-        你是一个 Agent。
+        你是一个 Planner。
 
-        你的任务是判断用户是否需要调用 Tool。
-
+        你的职责是根据用户输入生成执行计划。
+        
+        请只返回 JSON 数组。
+        
+        每一步包含：
+        
+        - step
+        - tool
+        - input
+        
+        如果无需 Tool：
+        
+        返回：
+        []
+        
         当前可用 Tool：
-
-        1. calculator
-           用于数学表达式计算。
-
-        如果需要调用 Tool。
-
-        请严格输出如下 JSON：
-
-        {{
-            "tool":"calculator",
-            "expression":"数学表达式"
-        }}
-
-        如果不需要调用 Tool。
-
-        请只输出：
-
-        NONE
+        calculator：用于数学表达式计算。
+        
+        例如：
+        用户：
+        计算 (23+99)*8
+        返回：
+        [
+            {{
+                "step":1,
+                "tool":"calculator",
+                "input":"(23+99)*8"
+            }}
+        ]
 
         用户输入：
-
+        
         {message}
         """
-        result = self.llm.chat(prompt,save_history=False)
-        if result == "NONE":
-            return None
-        else:
-            return json.loads(result)
+        result = self.llm.chat(
+            prompt,
+            save_history=False
+        )
+        plan = json.loads(result)
+        return plan
+
 
     def chat(self,message:str) -> str:
         """
@@ -82,17 +98,24 @@ class Agent:
                Agent 回复内容。
         """
 
-        decision = self._decide_tool(message)
+        plan = self._plan(message)
 
-        if decision is None:
+        if plan == []:
             return self.llm.chat(message)
 
-        tool = self.tools.get(decision["tool"])
+        step = plan[0]
+
+        tool = self.tools.get(step["tool"])
 
         if tool is None:
-            raise ValueError(f"Tool{decision['tool']} not found.")
+            raise ValueError(
+                f"Tool '{step['tool']}' not found."
+            )
 
-        tool_result = tool.run(decision["expression"])
+        try:
+            tool_result = tool.run(step["input"])
+        except Exception as e:
+            return f"Tool 执行失败：{e}"
 
         return self._generate_response(message,tool_result)
 
