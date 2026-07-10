@@ -32,112 +32,117 @@ class Agent:
 
 
 
-    def _plan(self,message: str) -> list[dict]:
-        """
-        根据用户输入生成执行计划。
-
-        Args:
-            message: 用户输入。
-
-        Returns:
-            Plan（步骤列表）。
-        """
-        prompt = f"""
-        你是一个 Planner。
-
-        你的职责是根据用户输入生成执行计划。
-        
-        请只返回 JSON 数组。
-        
-        每一步包含：
-        
-        - step
-        - tool
-        - input
-        
-        如果无需 Tool：
-        
-        返回：
-        []
-        
-        当前可用 Tool：
-        calculator：用于数学表达式计算。
-        
-        例如：
-        用户：
-        计算 (23+99)*8
-        返回：
-        [
-            {{
-                "step":1,
-                "tool":"calculator",
-                "input":"(23+99)*8"
-            }}
-        ]
-
-        用户输入：
-        
-        {message}
-        """
-        result = self.llm.chat(
-            prompt,
-            save_history=False
-        )
-        plan = json.loads(result)
-        return plan
-
-
     def chat(self,message:str) -> str:
-        """
-           与 Agent 进行一次对话。
+        observations = []
 
-           Args:
-               message: 用户输入。
+        MAX_STEPS = 10
+        for step in range(MAX_STEPS):
+            action = self._reason(
+                message,
+                observations
+            )
+            if action["type"] == "finish":
+                return action["answer"]
+            elif action["type"] == "action":
+                observation = self._execute_action(action)
+                observations.append(observation)
+            else:
+                raise ValueError(
+                    f"Unknown action type: {action['type']}"
+                )
 
-           Returns:
-               Agent 回复内容。
-        """
 
-        plan = self._plan(message)
 
-        if plan == []:
-            return self.llm.chat(message)
+    def _build_prompt(
+            self,
+            message: str,
+            observations: list[dict]
+    ) -> str:
+        observation_text = ""
+        if not observations:
+            observation_text = "Observation:\nNone"
 
-        step = plan[0]
-
-        tool = self.tools.get(step["tool"])
-
-        if tool is None:
-            raise ValueError(
-                f"Tool '{step['tool']}' not found."
+        for i, observation in enumerate(observations, start=1):
+            observation_text += (
+                f"Observation {i}\n"
+                f"Tool: {observation['tool']}\n"
+                f"Result: {observation['result']}\n\n"
             )
 
-        try:
-            tool_result = tool.run(step["input"])
-        except Exception as e:
-            return f"Tool 执行失败：{e}"
-
-        return self._generate_response(message,tool_result)
-
-    def _generate_response(self,message: str,tool_result: str) -> str:
-        """
-        根据 Tool 返回结果生成最终回复。
-        """
         prompt = f"""
-        你是一个 AI 助手。
+        你是一个 Agent。
 
-        用户的问题：
+        你的职责：
+
+        1. 根据当前信息决定下一步行动。
+        2. 可以调用 Tool。
+        3. 如果任务已经完成，则直接返回最终答案。
+
+        当前可用 Tool：
+
+        1. calculator
+           用于计算数学表达式。
+
+        Observations
+
+        {observation_text}  
+
+        用户输入:
+
         {message}
 
-        Tool 返回结果：
-        {tool_result}
+        Action:
 
-        请根据 Tool 返回结果回答用户。
+        {{
+            "type":"action",
+            "tool":"calculator",
+            "input":"..."
+        }}
 
-        要求：
-        1. 不要重新计算。
-        2. 不要修改 Tool 返回结果。
-        3. 不要编造 Tool 没有提供的信息。
-        4. 使用自然、友好的语言回答。
-        """
-        return self.llm.chat(prompt,save_history=False)
+       Finish:
+
+        {{
+            "type":"finish",
+            "answer":"..."
+        }}
+
+        不要输出 Markdown。
+
+        不要输出解释。
+
+        只输出 JSON。
+       """
+        return prompt
+
+
+
+    def _reason(
+            self,
+            message: str,
+            observations: list[dict]
+    ) -> dict:
+
+        prompt = self._build_prompt(message,observations)
+        action = self.llm.chat(prompt,save_history=False)
+        action = json.loads(action)
+        return action
+
+
+
+
+
+        
+
+
+    def _execute_action(self,action: dict) -> dict:
+        tool_name = action["tool"]
+        tool_input = action["input"]
+        tool = self.tools.get(tool_name)
+        if tool is None:
+            raise ValueError(f"Tool '{tool_name}' not found.")
+        observation = {
+            "tool": tool_name,
+            "result": tool.run(tool_input)
+        }
+        return observation
+
