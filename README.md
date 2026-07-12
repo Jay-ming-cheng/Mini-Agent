@@ -98,7 +98,7 @@ Push
 - ✅ Step 6：Tool Workflow
 - ✅ Step 7：Planning
 - ✅ Step 8：ReAct
-- ⬜ Step 9：Reflection
+- ✅ Step 9：Reflection
 - ⬜ Step 10：Memory
 
 ---
@@ -228,6 +228,16 @@ Reason
 
 直到完成整个任务。
 
+### Step 9：Reflection
+
+已完成：
+
+- ✅ 新增 Reflection Agent（_reflect）
+- ✅ Reflection Prompt
+- ✅ Tool Result 分析
+- ✅ Reflection JSON 输出
+- ✅ Reflection 接入 ReAct Loop
+- ✅ Observation + Reflection 共同参与下一轮推理
 ---
 
 # 🚀 Quick Start

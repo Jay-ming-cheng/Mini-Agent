@@ -34,18 +34,25 @@ class Agent:
 
     def chat(self,message:str) -> str:
         observations = []
+        reflection = None
 
         MAX_STEPS = 10
         for step in range(MAX_STEPS):
             action = self._reason(
                 message,
-                observations
+                observations,
+                reflection
             )
             if action["type"] == "finish":
                 return action["answer"]
             elif action["type"] == "action":
                 observation = self._execute_action(action)
                 observations.append(observation)
+
+                reflection = self._reflect(
+                    message,
+                    observation
+                )
             else:
                 raise ValueError(
                     f"Unknown action type: {action['type']}"
@@ -56,7 +63,8 @@ class Agent:
     def _build_prompt(
             self,
             message: str,
-            observations: list[dict]
+            observations: list[dict],
+            reflection
     ) -> str:
         observation_text = ""
         if not observations:
@@ -69,6 +77,19 @@ class Agent:
                 f"Result: {observation['result']}\n\n"
             )
 
+        if reflection is None:
+            reflection_text = "Reflection:\nNone"
+        else:
+            reflection_text = f"""
+        Reflection:
+
+        Status:
+        {reflection["status"]}
+
+        Reason:
+        {reflection["reason"]}
+        """
+
         prompt = f"""
         你是一个 Agent。
 
@@ -77,6 +98,13 @@ class Agent:
         1. 根据当前信息决定下一步行动。
         2. 可以调用 Tool。
         3. 如果任务已经完成，则直接返回最终答案。
+        4. 对于所有数学计算任务，
+        必须先调用 calculator。
+        
+        5. 即使数学表达式存在错误，
+        也必须先调用 calculator 获取 Tool 返回结果。
+        
+        6. 不允许自己计算，也不允许自己判断表达式是否合法。
 
         当前可用 Tool：
 
@@ -86,6 +114,8 @@ class Agent:
         Observations
 
         {observation_text}  
+        
+        {reflection_text}
 
         用户输入:
 
@@ -119,19 +149,15 @@ class Agent:
     def _reason(
             self,
             message: str,
-            observations: list[dict]
+            observations: list[dict],
+            reflection: dict | None
     ) -> dict:
 
-        prompt = self._build_prompt(message,observations)
+        prompt = self._build_prompt(message,observations,reflection)
         action = self.llm.chat(prompt,save_history=False)
         action = json.loads(action)
         return action
 
-
-
-
-
-        
 
 
     def _execute_action(self,action: dict) -> dict:
@@ -140,9 +166,71 @@ class Agent:
         tool = self.tools.get(tool_name)
         if tool is None:
             raise ValueError(f"Tool '{tool_name}' not found.")
+        try:
+            result = tool.run(tool_input)
+
+        except Exception as e:
+            result = str(e)
+
         observation = {
             "tool": tool_name,
-            "result": tool.run(tool_input)
+            "result": result
         }
+
         return observation
 
+
+
+    def _reflect(self,
+                 message: str,
+                 observation: dict) -> dict:
+        """
+        根据 Observation 判断上一轮执行情况。
+        """
+        prompt = f"""
+        你是一个 Reflection Agent。
+
+        你的职责：
+
+        根据 Tool 返回结果，判断这次执行是否成功。
+
+        用户问题：
+
+        {message}
+
+        Tool：
+
+        {observation["tool"]}
+
+        Tool 返回：
+
+        {observation["result"]}
+
+        如果执行成功，请返回：
+
+        {{
+            "status":"success",
+            "reason":"..."
+        }}
+
+        如果执行失败，请返回：
+
+        {{
+            "status":"failure",
+            "reason":"..."
+        }}
+
+        不要输出 Markdown。
+
+        不要解释。
+
+        只输出 JSON。
+        """
+        result = self.llm.chat(
+            prompt,
+            save_history=False
+        )
+
+        reflection = json.loads(result)
+
+        return reflection
