@@ -2,6 +2,7 @@
 from llm.client import LLMClient
 from tools.calculator import Calculator
 import json
+from memory.memory import Memory
 
 class Agent:
     """
@@ -25,6 +26,7 @@ class Agent:
                llm: 已创建好的 LLMClient 实例。
         """
         self.llm = llm
+        self.memory = Memory()
 
         self.tools = {
             "calculator": Calculator()
@@ -35,17 +37,31 @@ class Agent:
     def chat(self,message:str) -> str:
         observations = []
         reflection = None
+        memory = self.memory.get_all()
 
         MAX_STEPS = 10
         for step in range(MAX_STEPS):
             action = self._reason(
                 message,
                 observations,
-                reflection
+                reflection,
+                memory
             )
             if action["type"] == "finish":
+
+                memory = self._extract_memory(message)
+
+                if memory["save"]:
+                    self.memory.save(
+                        memory["key"],
+                        memory["value"]
+                    )
+
+
                 return action["answer"]
             elif action["type"] == "action":
+
+
                 observation = self._execute_action(action)
                 observations.append(observation)
 
@@ -64,8 +80,14 @@ class Agent:
             self,
             message: str,
             observations: list[dict],
-            reflection
+            reflection,
+            memory
     ) -> str:
+        memory_text = ""
+        if not memory:
+            memory_text = "Memory:\nNone"
+        for key, value in memory.items():
+            memory_text += f"{key}: {value}\n"
         observation_text = ""
         if not observations:
             observation_text = "Observation:\nNone"
@@ -110,6 +132,11 @@ class Agent:
 
         1. calculator
            用于计算数学表达式。
+           
+           
+        Memory:
+
+        {memory_text}
 
         Observations
 
@@ -150,10 +177,11 @@ class Agent:
             self,
             message: str,
             observations: list[dict],
-            reflection: dict | None
+            reflection: dict | None,
+            memory: dict
     ) -> dict:
 
-        prompt = self._build_prompt(message,observations,reflection)
+        prompt = self._build_prompt(message,observations,reflection,memory)
         action = self.llm.chat(prompt,save_history=False)
         action = json.loads(action)
         return action
@@ -234,3 +262,62 @@ class Agent:
         reflection = json.loads(result)
 
         return reflection
+
+    def _extract_memory(
+            self,
+            message: str
+    ) -> dict:
+        prompt = f"""
+        你是一个 Memory Extractor。
+
+        你的职责：
+        
+        判断用户输入中是否包含值得长期保存的信息。
+        
+        例如：
+        
+        姓名
+        
+        年龄
+        
+        职业
+        
+        城市
+        
+        兴趣
+        
+        偏好
+        
+        用户输入：
+
+        {message}
+        
+        
+        如果没有需要保存的信息，请返回：
+        
+        {{
+            "save": false
+        }}
+        
+        如果有，请返回：
+        
+        {{
+            "save": true,
+            "key":"name",
+            "value":"Jay"
+        }}
+        
+        不要输出 Markdown。
+        
+        不要解释。
+        
+        只输出 JSON。
+        """
+        result = self.llm.chat(
+            prompt,
+            save_history=False
+        )
+
+        memory = json.loads(result)
+
+        return memory

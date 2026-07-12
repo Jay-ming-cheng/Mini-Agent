@@ -1,4 +1,4 @@
-# Mini Agent
+# Mini Agent v1.0
 
 > A lightweight AI Agent built from scratch with Python.
 
@@ -99,7 +99,7 @@ Push
 - ✅ Step 7：Planning
 - ✅ Step 8：ReAct
 - ✅ Step 9：Reflection
-- ⬜ Step 10：Memory
+- ✅ Step 10：Memory
 
 ---
 
@@ -239,7 +239,13 @@ Reason
 - ✅ Reflection 接入 ReAct Loop
 - ✅ Observation + Reflection 共同参与下一轮推理
 ---
+### Step 10：Memory
 
+- ✅ Long-term Memory
+- ✅ Memory Retrieve
+- ✅ Memory Extract
+- ✅ Memory Store
+- ✅ Memory Prompt Injection
 # 🚀 Quick Start
 
 克隆项目：
